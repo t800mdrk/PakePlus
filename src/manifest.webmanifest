@@ -1,0 +1,9 @@
+{
+  "name": "流向",
+  "short_name": "流向",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f7f4ee",
+  "theme_color": "#121826",
+  "description": "不是管理时间，是看见时间去了哪里。"
+}
