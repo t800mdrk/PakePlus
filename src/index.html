@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#121826" />
+  <title>流向 v0.1｜时间流向记录器</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root{
+      --bg:#f7f4ee;--paper:#fffdf8;--ink:#161b26;--muted:#747b8a;--line:#e6dfd2;
+      --deep:#121826;--soft:#f1ece2;--shadow:0 14px 36px rgba(18,24,38,.10);--radius:24px;
+      --main:#2947a3;--life:#2f7a55;--rest:#a45f16;--lost:#8e3434;--und:#697386;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%}
+    body{margin:0;background:radial-gradient(circle at 18% -10%,#fff7d6 0,#f7f4ee 34%,#f2efe8 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink)}
+    button,input,textarea,select{font:inherit}button{cursor:pointer}
+    .app{max-width:760px;margin:0 auto;min-height:100vh;padding:18px 14px 92px}
+    header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:2px 0 18px}
+    h1{font-size:30px;margin:0;letter-spacing:.08em}.sub{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.45}.version{font-size:12px;color:#98a2b3;border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.72);white-space:nowrap}
+    .screen{display:none}.screen.on{display:block;animation:fade .16s ease}@keyframes fade{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .card{background:rgba(255,253,248,.92);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px}.card.flat{box-shadow:none;background:rgba(255,253,248,.70)}
+    .big-question{font-size:22px;font-weight:760;line-height:1.35;margin:0 0 18px}.now-note{color:var(--muted);font-size:14px;line-height:1.65;margin:0 0 18px}
+    .start-btn{width:100%;min-height:128px;border:0;border-radius:30px;background:linear-gradient(135deg,#141c2f,#323f59);color:#fff;box-shadow:0 18px 44px rgba(18,24,38,.24);font-size:24px;font-weight:850;letter-spacing:.02em}.start-btn small{display:block;font-size:14px;font-weight:450;opacity:.86;margin-top:8px;letter-spacing:0}
+    .timer{font-size:54px;font-weight:900;letter-spacing:-.04em;margin:8px 0 4px}.active-start{font-size:14px;color:var(--muted);margin-bottom:14px}.active-note{background:#f8f4ec;border:1px solid var(--line);border-radius:18px;padding:12px;color:#475467;font-size:14px;line-height:1.55;margin:12px 0 0;white-space:pre-wrap}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row.three{grid-template-columns:1fr 1fr 1fr}.stack{display:grid;gap:10px}.btn{border:0;border-radius:18px;background:var(--deep);color:#fff;padding:13px 15px;font-weight:760;box-shadow:0 8px 18px rgba(18,24,38,.12)}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none}.btn.danger{background:#fff;color:#9d2f2f;border:1px solid #f0c5c5;box-shadow:none}.btn.small{padding:8px 11px;border-radius:13px;font-size:13px}.btn.full{width:100%}
+    .quick-line{display:flex;gap:8px;align-items:center}.quick-line input{flex:1;border:1px solid var(--line);background:#fff;border-radius:16px;padding:13px 14px;min-width:0}.quick-line button{white-space:nowrap}
+    .mini-sum{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}.pill{border-radius:16px;background:#fff;border:1px solid var(--line);padding:9px 6px;text-align:center;min-width:0}.pill b{display:block;font-size:13px;white-space:nowrap}.pill span{font-size:12px;color:var(--muted)}
+    .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cat-btn{border:0;border-radius:20px;color:#fff;padding:18px 10px;font-weight:850;font-size:17px}.cat-btn small{display:block;font-weight:450;font-size:12px;opacity:.88;margin-top:5px}.cat-main{background:var(--main)}.cat-life{background:var(--life)}.cat-rest{background:var(--rest)}.cat-lost{background:var(--lost)}.cat-und{background:var(--und);grid-column:1/-1}
+    .field label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:16px;padding:12px 13px;background:#fff;color:var(--ink)}.field textarea{min-height:92px;resize:vertical}.hint{font-size:13px;color:var(--muted);line-height:1.65;margin:8px 0 0}
+    .datebar{display:flex;gap:8px;align-items:center;margin-bottom:12px}.datebar input{border:1px solid var(--line);background:#fff;border-radius:14px;padding:9px 10px;flex:1;min-width:0}.timeline-card{padding:12px}.timeline{position:relative;min-height:860px;border-radius:22px;background:#fff;border:1px solid var(--line);overflow:hidden}.timeline::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom, transparent 0, transparent calc(100%/24 - 1px), #f0ebe2 calc(100%/24));background-size:100% calc(100%/24);pointer-events:none}.hour{position:absolute;left:8px;transform:translateY(-50%);font-size:11px;color:#a4a098;background:#fff;padding:1px 4px;border-radius:999px}.seg{position:absolute;left:54px;right:10px;border-radius:16px;padding:8px 10px;color:#fff;box-shadow:0 8px 20px rgba(18,24,38,.14);overflow:hidden}.seg b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seg span{display:block;font-size:12px;opacity:.9;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seg.tiny{padding:3px 8px}.note-dot{position:absolute;left:32px;right:10px;display:flex;align-items:center;gap:7px;transform:translateY(-50%)}.note-dot i{width:12px;height:12px;border-radius:50%;background:var(--deep);border:2px solid #fff;box-shadow:0 0 0 1px #d8d0c3;flex:0 0 auto}.note-dot span{font-size:12px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 8px;box-shadow:0 4px 14px rgba(18,24,38,.08);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    .list{display:grid;gap:9px}.item{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px}.item-head{display:flex;justify-content:space-between;gap:8px}.item b{font-size:14px}.item p{margin:7px 0 0;color:#667085;font-size:13px;line-height:1.55;white-space:pre-wrap}.item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.badge{display:inline-block;border-radius:999px;color:#fff;padding:4px 8px;font-size:12px;font-weight:760}.empty{color:var(--muted);font-size:14px;line-height:1.7;padding:8px 0}.tabs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(520px,calc(100vw - 24px));display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:rgba(255,253,248,.86);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:24px;padding:8px;box-shadow:0 16px 44px rgba(18,24,38,.14);z-index:10}.nav{border:0;border-radius:17px;padding:10px 6px;background:transparent;color:#667085;font-weight:760}.nav.on{background:var(--deep);color:#fff}
+    dialog{border:0;border-radius:26px;padding:0;width:min(560px,calc(100vw - 24px));box-shadow:0 28px 90px rgba(18,24,38,.34)}dialog::backdrop{background:rgba(18,24,38,.48)}.modal{padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.modal h2{font-size:20px;margin:0}.x{border:0;background:#f3eee6;border-radius:999px;width:36px;height:36px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#121826;color:#fff;padding:10px 14px;border-radius:999px;box-shadow:var(--shadow);z-index:99;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;bottom:96px}.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.file-hidden{display:none}.pull-card{background:#fff7e9;border:1px solid #efd4a4;color:#7a4b12;border-radius:20px;padding:14px;line-height:1.75;font-size:14px}.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f2ede5;border:1px solid var(--line);border-radius:8px;padding:1px 5px}.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:520px){.app{padding:14px 10px 92px}h1{font-size:28px}.timer{font-size:48px}.mini-sum{grid-template-columns:repeat(5,1fr);gap:5px}.pill{padding:8px 2px}.pill b{font-size:12px}.pill span{font-size:11px}.row.three{grid-template-columns:1fr}.edit-grid{grid-template-columns:1fr}.timeline{min-height:760px}.seg{left:50px}.cat-grid{grid-template-columns:1fr 1fr}.cat-btn{padding:16px 6px}.more-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>流向</h1>
+        <p class="sub">先把这一段时间钉住，是什么以后再说。</p>
+      </div>
+      <div class="version">v0.1 极简入口</div>
+    </header>
+
+    <section class="screen on" id="screen-now">
+      <div class="card" id="nowCard"></div>
+
+      <div class="card flat">
+        <div class="quick-line">
+          <input id="quickText" placeholder="快记一句：吃了什么 / 心情 / 身体 / 被什么打断" />
+          <button class="btn secondary" id="quickSave">保存</button>
+        </div>
+        <p class="hint">不用选类型。先说人话，晚上再看。</p>
+      </div>
+
+      <div class="row">
+        <button class="btn secondary" id="retroOpen">补一段</button>
+        <button class="btn secondary" id="pullOpen">不太对劲</button>
+      </div>
+
+      <div class="card flat">
+        <b>今天粗略流向</b>
+        <div class="mini-sum" id="miniSum"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-timeline">
+      <div class="datebar">
+        <button class="btn secondary small" id="prevDay">前一天</button>
+        <input type="date" id="dayPick" />
+        <button class="btn secondary small" id="todayBtn">今天</button>
+      </div>
+      <div class="card timeline-card"><div class="timeline" id="timeline"></div></div>
+      <div class="card"><b>当天记录</b><div class="list" id="recordList" style="margin-top:10px"></div></div>
+    </section>
+
+    <section class="screen" id="screen-more">
+      <div class="card">
+        <h2 style="margin:0 0 10px">更多</h2>
+        <div class="more-grid">
+          <button class="btn secondary" id="exportBtn">导出 JSON</button>
+          <label class="btn secondary" for="importFile" style="text-align:center">导入 JSON</label>
+          <input id="importFile" class="file-hidden" type="file" accept=".json,application/json" />
+          <button class="btn secondary" id="clearDayBtn">清空当天</button>
+          <button class="btn danger" id="clearAllBtn">清空全部</button>
+        </div>
+        <p class="hint">数据保存在当前浏览器。换设备、清浏览器数据、换浏览器前，先导出 JSON。</p>
+      </div>
+      <div class="card flat">
+        <b>这版的规则</b>
+        <p class="hint">打开后先点开始，不问分类。停止时只做五选一：主线、生活、恢复、迷路、先不管。细节全部可选。</p>
+      </div>
+    </section>
+  </div>
+
+  <nav class="tabs">
+    <button class="nav on" data-screen="now">现在</button>
+    <button class="nav" data-screen="timeline">时间轴</button>
+    <button class="nav" data-screen="more">更多</button>
+  </nav>
+
+  <dialog id="stopDialog">
+    <div class="modal">
+      <div class="modal-head"><h2>刚才这段，大概算什么？</h2><button class="x" data-close="stopDialog">×</button></div>
+      <p class="hint" id="stopDur"></p>
+      <div class="cat-grid">
+        <button class="cat-btn cat-main" data-stop-cat="主线">主线<small>求职 / 录音 / 仲裁 / 工具</small></button>
+        <button class="cat-btn cat-life" data-stop-cat="生活">生活<small>睡觉 / 吃饭 / 洗漱 / 收拾</small></button>
+        <button class="cat-btn cat-rest" data-stop-cat="恢复">恢复<small>跳舞 / 听歌 / 真休息</small></button>
+        <button class="cat-btn cat-lost" data-stop-cat="迷路">迷路<small>刷手机 / 上头 / 拖住了</small></button>
+        <button class="cat-btn cat-und" data-stop-cat="未定">先不管<small>留下痕迹就够了</small></button>
+      </div>
+      <div class="field" style="margin-top:12px"><label>补一句，可不写</label><textarea id="stopNote" placeholder="比如：跳舞很开心 / 录音前磨蹭 / 刷视频停不下来"></textarea></div>
+    </div>
+  </dialog>
+
+  <dialog id="retroDialog">
+    <div class="modal">
+      <div class="modal-head"><h2>补一段</h2><button class="x" data-close="retroDialog">×</button></div>
+      <div class="stack">
+        <div class="edit-grid">
+          <div class="field"><label>开始</label><input id="retroStart" type="datetime-local" /></div>
+          <div class="field"><label>结束</label><input id="retroEnd" type="datetime-local" /></div>
+        </div>
+        <div class="field"><label>大概算什么</label><select id="retroCat"><option>未定</option><option>主线</option><option>生活</option><option>恢复</option><option>迷路</option></select></div>
+        <div class="field"><label>补一句，可不写</label><textarea id="retroNote" placeholder="比如：午饭 + 手机 / 戏鲸 / 录音准备"></textarea></div>
+      </div>
+      <div class="modal-actions"><button class="btn secondary" data-close="retroDialog">取消</button><button class="btn" id="retroSave">保存</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="pullDialog">
+    <div class="modal">
+      <div class="modal-head"><h2>先拉回来</h2><button class="x" data-close="pullDialog">×</button></div>
+      <div class="pull-card" id="pullText"></div>
+      <div class="field" style="margin-top:12px"><label>顺手记一句，可不写</label><textarea id="pullNote" placeholder="比如：现在没电 / 心乱 / 不想录音"></textarea></div>
+      <div class="modal-actions"><button class="btn secondary" id="newPull">换一个</button><button class="btn" id="pullSave">记下并开始 5 分钟</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="editDialog">
+    <div class="modal">
+      <div class="modal-head"><h2>编辑</h2><button class="x" data-close="editDialog">×</button></div>
+      <input id="editId" type="hidden" />
+      <div id="editSegmentFields" class="stack">
+        <div class="edit-grid">
+          <div class="field"><label>开始</label><input id="editStart" type="datetime-local" /></div>
+          <div class="field"><label>结束</label><input id="editEnd" type="datetime-local" /></div>
+        </div>
+        <div class="field"><label>分类</label><select id="editCat"><option>未定</option><option>主线</option><option>生活</option><option>恢复</option><option>迷路</option></select></div>
+      </div>
+      <div id="editNoteFields" class="stack" style="display:none">
+        <div class="field"><label>时间</label><input id="editTime" type="datetime-local" /></div>
+      </div>
+      <div class="field" style="margin-top:10px"><label>内容</label><textarea id="editText"></textarea></div>
+      <div class="modal-actions"><button class="btn danger" id="deleteBtn">删除</button><button class="btn" id="editSave">保存</button></div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+const KEY='liuxiang_v01_records';
+const ACTIVE='liuxiang_v01_active';
+const cats=['主线','生活','恢复','迷路','未定'];
+const catClass={'主线':'cat-main','生活':'cat-life','恢复':'cat-rest','迷路':'cat-lost','未定':'cat-und'};
+const catColor={'主线':'var(--main)','生活':'var(--life)','恢复':'var(--rest)','迷路':'var(--lost)','未定':'var(--und)'};
+let day=todayStr();
+let records=load();
+let active=getActive();
+let pullIndex=0;
+
+function $(id){return document.getElementById(id)}
+function pad(n){return String(n).padStart(2,'0')}
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function localDT(d){d=new Date(d);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`}
+function fmtTime(d){d=new Date(d);return `${pad(d.getHours())}:${pad(d.getMinutes())}`}
+function fmtDur(ms){let m=Math.max(0,Math.round(ms/60000));let h=Math.floor(m/60);m=m%60;return h?`${h}h${pad(m)}m`:`${m}m`}
+function minDay(d){d=new Date(d);return d.getHours()*60+d.getMinutes()+d.getSeconds()/60}
+function uid(){return (crypto.randomUUID?crypto.randomUUID():Date.now()+Math.random().toString(16).slice(2))}
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
+function save(){localStorage.setItem(KEY,JSON.stringify(records))}
+function getActive(){try{return JSON.parse(localStorage.getItem(ACTIVE)||'null')}catch(e){return null}}
+function setActive(v){active=v;if(v)localStorage.setItem(ACTIVE,JSON.stringify(v));else localStorage.removeItem(ACTIVE)}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500)}
+function sameDay(t){return String(t).slice(0,10)===day}
+function dayRecords(){return records.filter(r=>sameDay(r.type==='note'?r.time:r.start)).sort((a,b)=>new Date(a.type==='note'?a.time:a.start)-new Date(b.type==='note'?b.time:b.start))}
+
+function render(){renderNow();renderMini();renderTimeline();renderList();$('dayPick').value=day}
+function renderNow(){const box=$('nowCard');if(active){const s=new Date(active.start);box.innerHTML=`
+  <p class="big-question">正在流动中</p>
+  <div class="timer" id="timerText">${fmtDur(Date.now()-s)}</div>
+  <div class="active-start">开始于 ${fmtTime(s)}。这段先不用定义。</div>
+  ${active.note?`<div class="active-note">${esc(active.note)}</div>`:''}
+  <div class="stack" style="margin-top:14px">
+    <button class="btn full" id="stopOpen">停止</button>
+    <div class="row"><button class="btn secondary" id="addActiveNote">补一句</button><button class="btn danger" id="dropActive">丢弃</button></div>
+  </div>`;
+  $('stopOpen').onclick=openStop;$('addActiveNote').onclick=addActiveNote;$('dropActive').onclick=dropActive;
+}else{box.innerHTML=`
+  <p class="big-question">现在在流向哪里？</p>
+  <p class="now-note">别分类，别解释，先把这一段时间钉住。</p>
+  <button class="start-btn" id="startBtn">开始记录<small>点了就开始，不问你是什么</small></button>`;
+  $('startBtn').onclick=startNow;
+}}
+setInterval(()=>{if(active&&$('timerText'))$('timerText').textContent=fmtDur(Date.now()-new Date(active.start))},20000);
+function renderMini(){const rs=dayRecords().filter(r=>r.type==='segment');const totals={};cats.forEach(c=>totals[c]=0);rs.forEach(r=>totals[r.category]=(totals[r.category]||0)+Math.max(0,new Date(r.end)-new Date(r.start)));$('miniSum').innerHTML=cats.map(c=>`<div class="pill"><b>${c}</b><span>${fmtDur(totals[c]||0)}</span></div>`).join('')}
+function renderTimeline(){const tl=$('timeline');tl.innerHTML='';for(let h=0;h<=24;h+=3){const d=document.createElement('div');d.className='hour';d.style.top=(h/24*100)+'%';d.textContent=pad(h)+':00';tl.appendChild(d)}
+  dayRecords().forEach(r=>{if(r.type==='segment'){const s=new Date(r.start),e=new Date(r.end);const top=minDay(s)/1440*100;const h=Math.max(.7,(minDay(e)-minDay(s))/1440*100);const div=document.createElement('div');div.className='seg '+(h<2?'tiny':'');div.style.top=top+'%';div.style.height=h+'%';div.style.background=catColor[r.category]||catColor['未定'];div.innerHTML=`<b>${esc(r.category)}｜${esc(r.note||'未命名')}</b><span>${fmtTime(s)}-${fmtTime(e)} · ${fmtDur(e-s)}</span>`;div.onclick=()=>openEdit(r.id);tl.appendChild(div)}else{const t=new Date(r.time);const div=document.createElement('div');div.className='note-dot';div.style.top=(minDay(t)/1440*100)+'%';div.innerHTML=`<i></i><span>${fmtTime(t)}｜${esc(r.text||'快记')}</span>`;div.onclick=()=>openEdit(r.id);tl.appendChild(div)}})}
+function renderList(){const list=$('recordList');const rs=dayRecords();if(!rs.length){list.innerHTML='<div class="empty">这天还没有记录。</div>';return}list.innerHTML=rs.map(r=>{if(r.type==='segment'){const s=new Date(r.start),e=new Date(r.end);return `<div class="item"><div class="item-head"><div><span class="badge" style="background:${catColor[r.category]||catColor['未定']}">${esc(r.category)}</span> <b>${fmtTime(s)}-${fmtTime(e)}</b></div><div class="item-actions"><button class="btn secondary small" data-edit="${r.id}">编辑</button></div></div><p>${esc(r.note||'')}</p><p>${fmtDur(e-s)} · ${esc(r.source||'')}</p></div>`}else{const t=new Date(r.time);return `<div class="item"><div class="item-head"><div><span class="badge" style="background:#121826">快记</span> <b>${fmtTime(t)}</b></div><div class="item-actions"><button class="btn secondary small" data-edit="${r.id}">编辑</button></div></div><p>${esc(r.text||'')}</p></div>`}}).join('');list.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEdit(b.dataset.edit))}
+
+function startNow(){if(active){toast('已经在记录中');return}setActive({id:uid(),start:new Date().toISOString(),note:''});toast('开始了');render()}
+function openStop(){if(!active)return;$('stopDur').textContent=`从 ${fmtTime(active.start)} 开始，已经 ${fmtDur(Date.now()-new Date(active.start))}。`;$('stopNote').value=active.note||'';$('stopDialog').showModal()}
+function stopAs(category){if(!active)return;const start=new Date(active.start),end=new Date();if(end-start<1000){toast('太短了，没保存');setActive(null);render();return}records.push({id:uid(),type:'segment',start:start.toISOString(),end:end.toISOString(),category,note:$('stopNote').value.trim(),source:'实时'});save();setActive(null);$('stopDialog').close();toast('已保存');render()}
+function addActiveNote(){if(!active)return;const txt=prompt('给正在记录的这段补一句：',active.note||'');if(txt!==null){active.note=txt.trim();setActive(active);render()}}
+function dropActive(){if(confirm('丢弃当前这一段？不会保存。')){setActive(null);toast('已丢弃');render()}}
+function quickSave(){const txt=$('quickText').value.trim();if(!txt){toast('先写一句');return}records.push({id:uid(),type:'note',time:new Date().toISOString(),text:txt});save();$('quickText').value='';toast('已快记');render()}
+function openRetro(){const end=new Date(),start=new Date(end.getTime()-30*60000);$('retroStart').value=localDT(start);$('retroEnd').value=localDT(end);$('retroCat').value='未定';$('retroNote').value='';$('retroDialog').showModal()}
+function retroSave(){const start=new Date($('retroStart').value),end=new Date($('retroEnd').value);if(!start||!end||end<=start){toast('时间不太对');return}records.push({id:uid(),type:'segment',start:start.toISOString(),end:end.toISOString(),category:$('retroCat').value,note:$('retroNote').value.trim(),source:'补录'});save();$('retroDialog').close();toast('已补录');render()}
+
+const pulls=[
+  '先别分析。喝两口水，离开手机 3 分钟。回来后只决定：继续记录、补一段，还是休息。',
+  '现在只做一个小动作：站起来，肩膀放松，走 20 步。不要立刻要求自己进入主线。',
+  '把下一步缩到离谱小：只打开文件 / 只看 3 行 / 只录 30 秒。做完再说。',
+  '如果是没电，不要硬冲。闭眼 5 分钟，定闹钟。休息也可以被记录为生活或恢复。',
+  '如果是上头，先保存现场：快记一句“我现在停不下”。然后把屏幕扣下 2 分钟。'
+];
+function openPull(){pullIndex=(pullIndex+1)%pulls.length;$('pullText').textContent=pulls[pullIndex];$('pullNote').value='';$('pullDialog').showModal()}
+function savePull(){const txt=$('pullNote').value.trim();if(txt){records.push({id:uid(),type:'note',time:new Date().toISOString(),text:txt});save()}if(!active){setActive({id:uid(),start:new Date().toISOString(),note:txt||'先拉回来 5 分钟'})} $('pullDialog').close();toast('先钉住 5 分钟');render()}
+
+function openEdit(idv){const r=records.find(x=>x.id===idv);if(!r)return;$('editId').value=idv;if(r.type==='segment'){$('editSegmentFields').style.display='grid';$('editNoteFields').style.display='none';$('editStart').value=localDT(r.start);$('editEnd').value=localDT(r.end);$('editCat').value=r.category;$('editText').value=r.note||''}else{$('editSegmentFields').style.display='none';$('editNoteFields').style.display='grid';$('editTime').value=localDT(r.time);$('editText').value=r.text||''}$('editDialog').showModal()}
+function editSave(){const idv=$('editId').value;const r=records.find(x=>x.id===idv);if(!r)return;if(r.type==='segment'){const s=new Date($('editStart').value),e=new Date($('editEnd').value);if(e<=s){toast('时间不太对');return}r.start=s.toISOString();r.end=e.toISOString();r.category=$('editCat').value;r.note=$('editText').value.trim()}else{r.time=new Date($('editTime').value).toISOString();r.text=$('editText').value.trim()}save();$('editDialog').close();toast('已保存');render()}
+function delEdit(){const idv=$('editId').value;if(confirm('删除这条记录？')){records=records.filter(x=>x.id!==idv);save();$('editDialog').close();toast('已删除');render()}}
+function switchScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));$('screen-'+name).classList.add('on');document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('on',b.dataset.screen===name));if(name==='timeline')render()}
+function shiftDay(n){const d=new Date(day+'T00:00');d.setDate(d.getDate()+n);day=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;render()}
+function exportData(){const data={app:'流向',version:'0.1',exportedAt:new Date().toISOString(),records,active:getActive()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`liuxiang-v0.1-${todayStr()}.json`;a.click();URL.revokeObjectURL(a.href)}
+function importData(file){const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);const arr=Array.isArray(data)?data:(data.records||[]);const map=new Map(records.map(r=>[r.id,r]));arr.forEach(r=>{if(r&&r.id)map.set(r.id,r)});records=[...map.values()];save();toast('已导入');render()}catch(e){toast('导入失败')}};reader.readAsText(file)}
+function clearDay(){if(confirm('清空当前这一天的记录？')){records=records.filter(r=>!sameDay(r.type==='note'?r.time:r.start));save();render();toast('已清空当天')}}
+function clearAll(){if(confirm('清空全部记录？这个操作不可撤销。')){records=[];save();setActive(null);render();toast('已清空')}}
+
+$('quickSave').onclick=quickSave;$('quickText').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();quickSave()}});
+$('retroOpen').onclick=openRetro;$('pullOpen').onclick=openPull;$('retroSave').onclick=retroSave;$('pullSave').onclick=savePull;$('newPull').onclick=()=>{pullIndex=(pullIndex+1)%pulls.length;$('pullText').textContent=pulls[pullIndex]};
+document.querySelectorAll('[data-stop-cat]').forEach(b=>b.onclick=()=>stopAs(b.dataset.stopCat));
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$((b.dataset.close)).close());
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>switchScreen(b.dataset.screen));
+$('prevDay').onclick=()=>shiftDay(-1);$('todayBtn').onclick=()=>{day=todayStr();render()};$('dayPick').onchange=e=>{day=e.target.value||todayStr();render()};
+$('exportBtn').onclick=exportData;$('importFile').onchange=e=>{const f=e.target.files[0];if(f)importData(f);e.target.value=''};$('clearDayBtn').onclick=clearDay;$('clearAllBtn').onclick=clearAll;$('editSave').onclick=editSave;$('deleteBtn').onclick=delEdit;
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+render();
+</script>
+</body>
+</html>
